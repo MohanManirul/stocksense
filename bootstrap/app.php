@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use App\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,7 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // can share data (like the logged-in user) with React.
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/');
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

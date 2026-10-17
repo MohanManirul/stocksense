@@ -1,24 +1,31 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import type { ComponentType } from 'react';
+import AppLayout from '@/layouts/app-layout';
+
+const pages = import.meta.glob('./pages/**/*.tsx');
+const appName = import.meta.env.VITE_APP_NAME || 'StockSense';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} | StockSense` : 'StockSense'),
-
-    resolve: (name) => {
-        const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/page.tsx', { eager: true });
+    title: (title) => (title ? `${title} · ${appName}` : appName),
+    resolve: async (name) => {
         const page = pages[`./pages/${name}.tsx`];
-
         if (!page) {
-            throw new Error(`No page found for Inertia::render('${name}')`);
+            throw new Error(`Page not found: ${name}`);
         }
-
-        return page;
+        const module = (await page()) as { default: ResolvedComponent };
+        return module.default;
     },
-
+    layout: (name) => (name.startsWith('auth/') ? null : AppLayout),
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />);
+        if (el) {
+            createRoot(el).render(<App {...props} />);
+        }
+    },
+    progress: {
+        color: '#2a78d6',
+        delay: 150,
+        showSpinner: false,
     },
 });
