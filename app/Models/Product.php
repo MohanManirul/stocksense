@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseOrderStatus;
 use Database\Factories\ProductFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -23,23 +24,18 @@ class Product extends Model
         'description',
         'cost_price',
         'sale_price',
-        'stock_on_hand',
         'reorder_level',
         'is_active',
-    ];  
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
-    protected function casts():array
+    protected function casts(): array
     {
-        return[
+        return [
             'cost_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
-             'stock_on_hand' => 'integer',
-             'reorder_level' => 'integer'
-
+            'stock_on_hand' => 'integer',
+            'reorder_level' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -58,12 +54,6 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
-
-    public function orderItems(): HasMany
-    {
-        return $this->hasMany(OrderItem::class);
-    }
-
     public function saleItems(): HasMany
     {
         return $this->hasMany(SaleItem::class);
@@ -74,22 +64,31 @@ class Product extends Model
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
-    public function purchaseInvoiceItems(): HasMany
+    public function quantityOnOrder(): int
     {
-        return $this->hasMany(PurchaseInvoiceItem::class);
-    }   
+        return (int) $this->purchaseOrderItems()
+            ->whereHas('purchaseOrder', fn (Builder $query) => $query->where('status', PurchaseOrderStatus::Ordered))
+            ->sum('quantity');
+    }
 
+    #[Scope]
     protected function active(Builder $query): void
     {
         $query->where('is_active', true);
     }
 
-    protected function search(Builder $query, string $term): void
+    #[Scope]
+    protected function lowStock(Builder $query): void
+    {
+        $query->whereColumn('stock_on_hand', '<=', 'reorder_level');
+    }
+
+    #[Scope]
+    protected function search(Builder $query, ?string $term): void
     {
         $query->when($term, fn (Builder $query) => $query->where(function (Builder $query) use ($term) {
             $query->whereLike('name', "%{$term}%", caseSensitive: false)
                 ->orWhereLike('sku', "%{$term}%", caseSensitive: false);
         }));
-    }   
-
+    }
 }

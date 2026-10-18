@@ -17,6 +17,6 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Role::findOrCreate('admin', 'web')->syncPermissions(config('admin-permissions.permissions'));
-        Role::findOrCreate('staff', 'web')->syncPermissions(['view categories', 'view suppliers']);
+        Role::findOrCreate('staff', 'web')->syncPermissions(['view products', 'view categories', 'view suppliers']);
     }
 }

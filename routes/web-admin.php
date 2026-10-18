@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductPageController;
 use App\Http\Controllers\Admin\RolePageController;
 use App\Http\Controllers\Admin\SupplierPageController;
 use App\Http\Controllers\Admin\UserPageController;
@@ -18,6 +19,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard', fn () => Inertia::render('admin/dashboard/page'))->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::controller(ProductPageController::class)
+        ->prefix('products')
+        ->name('products.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::get('/{product}', 'show')->name('show');
+            Route::get('/{product}/edit', 'edit')->name('edit');
+        });
 
     Route::get('/categories', fn () => Inertia::render('admin/categories/page'))
         ->middleware('permission:view categories')

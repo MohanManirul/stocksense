@@ -43,8 +43,10 @@ class RoleApiTest extends TestCase
 
         $this->getJson('/v1/admin/roles/permission-groups')
             ->assertOk()
-            ->assertJsonPath('data.0.module', 'categories')
-            ->assertJsonPath('data.0.permissions', ['view categories', 'create categories', 'edit categories', 'delete categories']);
+            ->assertJsonPath('data.0.module', 'products')
+            ->assertJsonPath('data.0.permissions', ['view products', 'create products', 'edit products', 'delete products'])
+            ->assertJsonPath('data.1.module', 'stock')
+            ->assertJsonPath('data.1.permissions', ['adjust stock']);
     }
 
     public function test_admin_can_create_update_and_delete_a_role(): void

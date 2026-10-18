@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Enums\UserRole;
 use App\Models\PurchaseOrder;
 use App\Models\Sale;
+use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -93,11 +94,12 @@ final class UserService
         $this->ensureNotProtected($user);
 
         $hasHistory = Sale::where('user_id', $user->id)->exists()
-            || PurchaseOrder::where('created_by', $user->id)->orWhere('received_by', $user->id)->exists();
+            || PurchaseOrder::where('created_by', $user->id)->orWhere('received_by', $user->id)->exists()
+            || StockMovement::where('user_id', $user->id)->exists();
 
         if ($hasHistory) {
             throw ValidationException::withMessages([
-                'user' => 'This user has sales or purchase orders on record and cannot be deleted.',
+                'user' => 'This user has sales, purchase orders or stock changes on record and cannot be deleted.',
             ]);
         }
 
