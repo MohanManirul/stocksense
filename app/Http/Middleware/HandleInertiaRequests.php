@@ -2,17 +2,14 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Category;
-use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Spatie\Permission\Models\Permission;
 
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * The root template that's loaded on the first page visit.
-     *
      * @see https://inertiajs.com/server-side-setup#root-template
      *
      * @var string
@@ -20,8 +17,6 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
-     * Determines the current asset version.
-     *
      * @see https://inertiajs.com/asset-versioning
      */
     public function version(Request $request): ?string
@@ -30,8 +25,6 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Define the props that are shared by default.
-     *
      * @see https://inertiajs.com/shared-data
      *
      * @return array<string, mixed>
@@ -42,8 +35,11 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'appName' => config('app.name'),
             'auth' => fn () => [
-                'user' => $request->user()?->only('id', 'name', 'email', 'role'),
-                'can' => $request->user() ? $this->permissions($request->user()) : null,
+                'user' => $request->user() ? [
+                    ...$request->user()->only('id', 'name', 'email'),
+                    'roles' => $request->user()->getRoleNames(),
+                ] : null,
+                'permissions' => $request->user() ? $this->permissions($request->user()) : [],
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -53,15 +49,12 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array<string, bool>
+     * @return array<int, string>
      */
     private function permissions(User $user): array
     {
-        return [
-            'manageCatalog' => $user->isOwner(),
-            'manageCategories' => $user->can('create', Category::class),
-            'manageSuppliers' => $user->can('create', Supplier::class),
-            'managePurchaseOrders' => $user->isOwner(),
-        ];
+        $permissions = $user->isSuperAdmin() ? Permission::pluck('name') : $user->getAllPermissions()->pluck('name');
+
+        return $permissions->values()->all();
     }
 }

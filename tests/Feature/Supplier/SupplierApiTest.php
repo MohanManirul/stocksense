@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Supplier;
 
+use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -15,10 +16,10 @@ class SupplierApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_open_supplier_pages(): void
+    public function test_admin_can_open_supplier_pages(): void
     {
         $supplier = Supplier::factory()->create();
-        $this->actingAs(User::factory()->owner()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
 
         $this->get('/admin/suppliers')
             ->assertOk()
@@ -36,7 +37,7 @@ class SupplierApiTest extends TestCase
     public function test_staff_cannot_open_create_or_edit_pages(): void
     {
         $supplier = Supplier::factory()->create();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create());
 
         $this->get('/admin/suppliers')->assertOk();
         $this->get('/admin/suppliers/create')->assertForbidden();
@@ -48,9 +49,9 @@ class SupplierApiTest extends TestCase
         $this->getJson('/v1/admin/suppliers')->assertUnauthorized();
     }
 
-    public function test_owner_can_manage_suppliers(): void
+    public function test_admin_can_manage_suppliers(): void
     {
-        $this->actingAs(User::factory()->owner()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
 
         $id = $this->postJson('/v1/admin/suppliers', [
             'name' => 'FreshFlow Distributors',
@@ -81,7 +82,7 @@ class SupplierApiTest extends TestCase
     {
         Supplier::factory()->create(['name' => 'Prime Wholesale']);
         Supplier::factory()->count(20)->create();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create());
 
         $this->getJson('/v1/admin/suppliers?search=prime')
             ->assertOk()
@@ -98,7 +99,7 @@ class SupplierApiTest extends TestCase
     public function test_staff_cannot_change_suppliers(): void
     {
         $supplier = Supplier::factory()->create();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create());
 
         $this->postJson('/v1/admin/suppliers', ['name' => 'X', 'lead_time_days' => 3])->assertForbidden();
         $this->putJson("/v1/admin/suppliers/{$supplier->id}", ['name' => 'X', 'lead_time_days' => 3])->assertForbidden();
@@ -108,7 +109,7 @@ class SupplierApiTest extends TestCase
     public function test_input_is_validated(): void
     {
         Supplier::factory()->create(['name' => 'Prime Wholesale']);
-        $this->actingAs(User::factory()->owner()->create());
+        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
 
         $this->postJson('/v1/admin/suppliers', ['name' => 'Prime Wholesale', 'email' => 'not-an-email', 'lead_time_days' => 0])
             ->assertUnprocessable()
@@ -117,7 +118,7 @@ class SupplierApiTest extends TestCase
 
     public function test_supplier_with_products_or_purchase_orders_cannot_be_deleted(): void
     {
-        $owner = User::factory()->owner()->create();
+        $admin = User::factory()->withRole(UserRole::Admin)->create();
         $withProduct = Supplier::factory()->create();
         $withOrder = Supplier::factory()->create();
         Product::create([
@@ -128,8 +129,8 @@ class SupplierApiTest extends TestCase
             'cost_price' => 20,
             'sale_price' => 30,
         ]);
-        PurchaseOrder::forceCreate(['supplier_id' => $withOrder->id, 'created_by' => $owner->id, 'total' => 0]);
-        $this->actingAs($owner);
+        PurchaseOrder::forceCreate(['supplier_id' => $withOrder->id, 'created_by' => $admin->id, 'total' => 0]);
+        $this->actingAs($admin);
 
         $this->deleteJson("/v1/admin/suppliers/{$withProduct->id}")
             ->assertUnprocessable()

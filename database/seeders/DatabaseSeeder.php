@@ -15,15 +15,20 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@stocksense.test'],
-            ['name' => 'Shop Admin', 'role' => UserRole::Owner, 'password' => 'password'],
-        );
+        $this->call(RoleSeeder::class);
 
-        User::updateOrCreate(
-            ['email' => 'staff@stocksense.test'],
-            ['name' => 'Shop Staff', 'role' => UserRole::Staff, 'password' => 'password'],
-        );
+        $accounts = [
+            ['email' => 'admin@stocksense.test', 'name' => 'Shop Owner', 'role' => UserRole::SuperAdmin],
+            ['email' => 'manager@stocksense.test', 'name' => 'Shop Manager', 'role' => UserRole::Admin],
+            ['email' => 'staff@stocksense.test', 'name' => 'Shop Staff', 'role' => UserRole::Staff],
+        ];
+
+        foreach ($accounts as $account) {
+            User::updateOrCreate(
+                ['email' => $account['email']],
+                ['name' => $account['name'], 'password' => 'password'],
+            )->syncRoles($account['role']->value);
+        }
 
         foreach (['Beverages', 'Snacks', 'Dairy', 'Household', 'Personal Care', 'Stationery'] as $name) {
             Category::firstOrCreate(['name' => $name]);

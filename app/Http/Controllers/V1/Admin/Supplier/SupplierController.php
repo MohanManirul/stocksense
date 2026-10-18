@@ -4,22 +4,33 @@ namespace App\Http\Controllers\V1\Admin\Supplier;
 
 use App\Helpers\ApiResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Supplier\IndexSupplierRequest;
+use App\Http\Requests\IndexRequest;
 use App\Http\Requests\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Http\Resources\Supplier\SupplierResource;
 use App\Models\Supplier;
 use App\Services\Supplier\SupplierService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class SupplierController extends Controller
+class SupplierController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view suppliers', only: ['index', 'show']),
+            new Middleware('permission:create suppliers', only: ['store']),
+            new Middleware('permission:edit suppliers', only: ['update']),
+            new Middleware('permission:delete suppliers', only: ['destroy']),
+        ];
+    }
+
     public function __construct(
         private readonly SupplierService $supplierService,
     ) {}
 
-    public function index(IndexSupplierRequest $request): JsonResponse
+    public function index(IndexRequest $request): JsonResponse
     {
         return ApiResponseHelper::paginated(SupplierResource::collection($this->supplierService->list($request->validated())));
     }
@@ -45,8 +56,6 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier): JsonResponse
     {
-        Gate::authorize('delete', $supplier);
-
         $this->supplierService->delete($supplier);
 
         return ApiResponseHelper::success(message: 'Supplier deleted.');

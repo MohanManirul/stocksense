@@ -26,7 +26,7 @@ class AdminAuthTest extends TestCase
 
     public function test_user_can_log_in_with_valid_credentials(): void
     {
-        $user = User::factory()->create(['role' => UserRole::Owner]);
+        $user = User::factory()->withRole(UserRole::Admin)->create();
 
         $this->post('/admin/login', ['email' => $user->email, 'password' => 'password'])
             ->assertRedirect('/admin/dashboard');

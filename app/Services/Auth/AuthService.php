@@ -37,7 +37,8 @@ final class AuthService
         }
 
         return [
-            ['role' => 'Admin', 'email' => 'admin@stocksense.test', 'password' => 'password'],
+            ['role' => 'Super Admin', 'email' => 'admin@stocksense.test', 'password' => 'password'],
+            ['role' => 'Admin', 'email' => 'manager@stocksense.test', 'password' => 'password'],
             ['role' => 'Staff', 'email' => 'staff@stocksense.test', 'password' => 'password'],
         ];
     }

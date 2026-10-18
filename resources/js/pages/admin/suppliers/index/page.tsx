@@ -13,6 +13,7 @@ import type { Supplier } from '../types';
 
 export default function Suppliers() {
     const can = usePermissions();
+    const hasActions = can('edit suppliers') || can('delete suppliers');
     const [params, setParams] = useQueryParams();
     const [search, setSearch] = useState(params.search ?? '');
     const load = useCallback((signal: AbortSignal) => getSuppliers({ search: params.search, page: params.page }, signal), [params.search, params.page]);
@@ -39,7 +40,7 @@ export default function Suppliers() {
             title="Suppliers"
             description="Who you buy from and how long deliveries take."
             actions={
-                can.manageSuppliers && (
+                can('create suppliers') && (
                     <ButtonLink href="/admin/suppliers/create" icon={<Plus className="size-4" aria-hidden />}>
                         Add supplier
                     </ButtonLink>
@@ -78,7 +79,7 @@ export default function Suppliers() {
                                         <Th className="hidden md:table-cell">Contact</Th>
                                         <Th align="right">Lead time</Th>
                                         <Th align="right">Products</Th>
-                                        {can.manageSuppliers && (
+                                        {hasActions && (
                                             <Th align="right">
                                                 <span className="sr-only">Actions</span>
                                             </Th>
@@ -95,29 +96,33 @@ export default function Suppliers() {
                                             </Td>
                                             <Td align="right">{supplier.lead_time_days} days</Td>
                                             <Td align="right">{supplier.products_count}</Td>
-                                            {can.manageSuppliers && (
+                                            {hasActions && (
                                                 <Td align="right">
                                                     <div className="flex justify-end gap-1">
-                                                        <Link
-                                                            href={`/admin/suppliers/${supplier.id}/edit`}
-                                                            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                                            title="Edit"
-                                                            aria-label={`Edit ${supplier.name}`}
-                                                        >
-                                                            <Pencil className="size-4" />
-                                                        </Link>
-                                                        <ConfirmButton
-                                                            onConfirm={() => remove(supplier)}
-                                                            title={`Delete ${supplier.name}?`}
-                                                            description="Suppliers that still have products or purchase orders can’t be deleted."
-                                                            confirmLabel="Delete supplier"
-                                                            variant="danger"
-                                                            triggerVariant="ghost"
-                                                            size="sm"
-                                                            icon={<Trash2 className="size-4 text-slate-400" aria-label={`Delete ${supplier.name}`} />}
-                                                        >
-                                                            {null}
-                                                        </ConfirmButton>
+                                                        {can('edit suppliers') && (
+                                                            <Link
+                                                                href={`/admin/suppliers/${supplier.id}/edit`}
+                                                                className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                                                title="Edit"
+                                                                aria-label={`Edit ${supplier.name}`}
+                                                            >
+                                                                <Pencil className="size-4" />
+                                                            </Link>
+                                                        )}
+                                                        {can('delete suppliers') && (
+                                                            <ConfirmButton
+                                                                onConfirm={() => remove(supplier)}
+                                                                title={`Delete ${supplier.name}?`}
+                                                                description="Suppliers that still have products or purchase orders can’t be deleted."
+                                                                confirmLabel="Delete supplier"
+                                                                variant="danger"
+                                                                triggerVariant="ghost"
+                                                                size="sm"
+                                                                icon={<Trash2 className="size-4 text-slate-400" aria-label={`Delete ${supplier.name}`} />}
+                                                            >
+                                                                {null}
+                                                            </ConfirmButton>
+                                                        )}
                                                     </div>
                                                 </Td>
                                             )}
