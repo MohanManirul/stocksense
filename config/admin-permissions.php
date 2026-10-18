@@ -12,6 +12,12 @@ return [
         'view sales',
         'create sales',
 
+        'view purchase orders',
+        'create purchase orders',
+        'edit purchase orders',
+        'delete purchase orders',
+        'receive purchase orders',
+
         'view categories',
         'create categories',
         'edit categories',

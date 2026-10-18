@@ -4,6 +4,8 @@ use App\Http\Controllers\V1\Admin\Category\CategoryController;
 use App\Http\Controllers\V1\Admin\Dashboard\DashboardController;
 use App\Http\Controllers\V1\Admin\Product\ProductController;
 use App\Http\Controllers\V1\Admin\Product\ProductStockController;
+use App\Http\Controllers\V1\Admin\PurchaseOrder\PurchaseOrderController;
+use App\Http\Controllers\V1\Admin\PurchaseOrder\PurchaseOrderStatusController;
 use App\Http\Controllers\V1\Admin\Role\RoleController;
 use App\Http\Controllers\V1\Admin\Sale\SaleController;
 use App\Http\Controllers\V1\Admin\Supplier\SupplierController;
@@ -23,6 +25,17 @@ Route::middleware('auth:sanctum')
 
         Route::get('sales/options', [SaleController::class, 'options'])->name('sales.options');
         Route::apiResource('sales', SaleController::class)->only(['index', 'store', 'show']);
+
+        Route::get('purchase-orders/options', [PurchaseOrderController::class, 'options'])->name('purchase-orders.options');
+        Route::controller(PurchaseOrderStatusController::class)
+            ->prefix('purchase-orders/{purchase_order}')
+            ->name('purchase-orders.')
+            ->group(function () {
+                Route::post('place', 'place')->name('place');
+                Route::post('receive', 'receive')->name('receive');
+                Route::post('cancel', 'cancel')->name('cancel');
+            });
+        Route::apiResource('purchase-orders', PurchaseOrderController::class);
 
         Route::apiResource('categories', CategoryController::class)->except('show');
         Route::apiResource('suppliers', SupplierController::class);

@@ -13,6 +13,7 @@ class PurchaseOrder extends Model
     protected $fillable = [
         'supplier_id',
         'created_by',
+        'received_by',
         'total',
         'status',
         'expected_at',
@@ -51,6 +52,11 @@ class PurchaseOrder extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function receiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
     }
 
     public function items(): HasMany

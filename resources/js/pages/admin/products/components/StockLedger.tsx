@@ -9,6 +9,10 @@ import { getStockMovements } from '../api';
 
 const movementTone = { opening: 'gray', sale: 'blue', purchase: 'green', adjustment: 'amber' } as const;
 
+const referencePath = { sale: '/admin/sales', purchase_order: '/admin/purchase-orders' } as const;
+
+const referencePermission = { sale: 'view sales', purchase_order: 'view purchase orders' } as const;
+
 export default function StockLedger({ productId }: { productId: number }) {
     const [page, setPage] = useState(1);
     const load = useCallback((signal: AbortSignal) => getStockMovements(productId, page, signal), [productId, page]);
@@ -49,8 +53,8 @@ export default function StockLedger({ productId }: { productId: number }) {
                                             {movement.note && <p className="mt-1 text-xs text-slate-500">{movement.note}</p>}
                                         </Td>
                                         <Td className="hidden md:table-cell">
-                                            {movement.reference?.type === 'sale' && can('view sales') ? (
-                                                <Link href={`/admin/sales/${movement.reference.id}`} className="hover:underline">
+                                            {movement.reference && can(referencePermission[movement.reference.type]) ? (
+                                                <Link href={`${referencePath[movement.reference.type]}/${movement.reference.id}`} className="hover:underline">
                                                     {movement.reference.number}
                                                 </Link>
                                             ) : (

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ProductPageController;
+use App\Http\Controllers\Admin\PurchaseOrderPageController;
 use App\Http\Controllers\Admin\RolePageController;
 use App\Http\Controllers\Admin\SalePageController;
 use App\Http\Controllers\Admin\SupplierPageController;
@@ -38,6 +39,16 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/create', 'create')->name('create');
             Route::get('/{sale}', 'show')->name('show');
+        });
+
+    Route::controller(PurchaseOrderPageController::class)
+        ->prefix('purchase-orders')
+        ->name('purchase-orders.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::get('/{purchaseOrder}', 'show')->name('show');
+            Route::get('/{purchaseOrder}/edit', 'edit')->name('edit');
         });
 
     Route::get('/categories', fn () => Inertia::render('admin/categories/page'))
