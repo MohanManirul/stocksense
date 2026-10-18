@@ -3,6 +3,12 @@
 return [
 
     'permissions' => [
+        'view products',
+        'create products',
+        'edit products',
+        'delete products',
+        'adjust stock',
+
         'view categories',
         'create categories',
         'edit categories',

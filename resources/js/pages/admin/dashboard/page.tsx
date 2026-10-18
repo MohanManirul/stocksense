@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { PackageCheck, ShoppingCart, Truck, TriangleAlert, type LucideIcon } from 'lucide-react';
 import AdminPageLayout from '@/components/admin/AdminPageLayout';
 import { Card, CardHeader, EmptyState, LoadError, PageSkeleton, Table, Tbody, Td, Th } from '@/components/ui';
@@ -55,10 +56,10 @@ export default function Dashboard() {
                                     {state.data.low_stock_products.map((product) => (
                                         <tr key={product.id}>
                                             <Td className="font-medium text-slate-900">
-                                                <span className="inline-flex items-center gap-2">
+                                                <Link href={`/admin/products/${product.id}`} className="inline-flex items-center gap-2 hover:underline">
                                                     <TriangleAlert className="size-4 text-amber-500" aria-hidden />
                                                     {product.name}
-                                                </span>
+                                                </Link>
                                             </Td>
                                             <Td className="text-slate-500">{product.sku}</Td>
                                             <Td align="right">{qty(product.stock_on_hand)}</Td>

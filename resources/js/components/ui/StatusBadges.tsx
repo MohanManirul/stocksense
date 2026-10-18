@@ -36,13 +36,17 @@ export function ReorderStatusBadge({ status }: { status: ReorderStatus }) {
     );
 }
 
-export function StockBadge({ stock, active = true }: { stock: number; active?: boolean }) {
+export function StockBadge({ stock, active = true, reorderLevel }: { stock: number; active?: boolean; reorderLevel?: number }) {
     if (!active) {
         return <Badge tone="gray">Inactive</Badge>;
     }
 
-    if (stock === 0) {
+    if (stock <= 0) {
         return <Badge tone="red" icon={<CircleAlert className="size-3.5" aria-hidden />}>Out of stock</Badge>;
+    }
+
+    if (reorderLevel !== undefined && stock <= reorderLevel) {
+        return <Badge tone="amber" icon={<TriangleAlert className="size-3.5" aria-hidden />}>Low stock</Badge>;
     }
 
     return <Badge tone="green" icon={<CircleCheck className="size-3.5" aria-hidden />}>In stock</Badge>;

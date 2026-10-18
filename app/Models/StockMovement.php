@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\StockMovementType;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -11,9 +10,16 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class StockMovement extends Model
 {
     protected $fillable = [
-        'product_id', 'user_id', 'type', 'quantity', 'balance_after', 'reference', 'note', 'occurred_at'
+        'product_id',
+        'user_id',
+        'type',
+        'quantity',
+        'balance_after',
+        'reference_type',
+        'reference_id',
+        'note',
+        'occurred_at',
     ];
-
 
     protected function casts(): array
     {

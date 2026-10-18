@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
+use App\Enums\PurchaseOrderStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,13 +12,14 @@ class PurchaseOrder extends Model
 {
     protected $fillable = [
         'supplier_id',
-        'total_amount',
+        'created_by',
+        'total',
         'status',
         'expected_at',
         'ordered_at',
         'received_at',
         'cancelled_at',
-        'notes'
+        'notes',
     ];
 
     protected $attributes = [
@@ -29,7 +30,7 @@ class PurchaseOrder extends Model
     {
         return [
             'status' => PurchaseOrderStatus::class,
-            'total_amount' => 'decimal:2',
+            'total' => 'decimal:2',
             'expected_at' => 'date',
             'ordered_at' => 'datetime',
             'received_at' => 'datetime',
@@ -37,32 +38,28 @@ class PurchaseOrder extends Model
         ];
     }
 
-    protected function number():Attribute
+    protected function number(): Attribute
     {
-        return Attribute::make(
-            get: fn ($value) => str_pad($value, 6, '0', STR_PAD_LEFT),
-        );
+        return Attribute::get(fn () => 'PO-'.str_pad((string) $this->id, 5, '0', STR_PAD_LEFT));
     }
 
-    public function supplier():BelongsTo
+    public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
-    public function creator():BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function items():HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
-    public function isDraft():bool
+    public function isDraft(): bool
     {
-        return $this->status === PurchaseOrderStatus::DRAFT;
+        return $this->status === PurchaseOrderStatus::Draft;
     }
-
-
 }
