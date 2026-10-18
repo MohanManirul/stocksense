@@ -19,12 +19,7 @@ import type { SharedProps } from '@/types';
 
 const navigation = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboard, match: (url: string) => url === '/' },
-    { href: '/sales', label: 'Sales', icon: ShoppingCart, match: (url: string) => url.startsWith('/sales') },
-    { href: '/products', label: 'Products', icon: Package, match: (url: string) => url.startsWith('/products') },
-    { href: '/reorder-suggestions', label: 'Reorder forecast', icon: ChartNoAxesCombined, match: (url: string) => url.startsWith('/reorder-suggestions') },
-    { href: '/purchase-orders', label: 'Purchase orders', icon: ClipboardList, match: (url: string) => url.startsWith('/purchase-orders') },
-    { href: '/suppliers', label: 'Suppliers', icon: Truck, match: (url: string) => url.startsWith('/suppliers') },
-    { href: '/categories', label: 'Categories', icon: Tags, match: (url: string) => url.startsWith('/categories') },
+    
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
