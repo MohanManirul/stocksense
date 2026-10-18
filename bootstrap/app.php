@@ -1,34 +1,45 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
-use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/up',
+        using: function (): void {
+            Route::get('/up', fn () => response('OK'));
+
+            Route::middleware('api')
+                ->prefix('v1')
+                ->name('v1.')
+                ->group(base_path('routes/admin-v1.php'));
+
+            Route::middleware('web')
+                ->group(base_path('routes/web.php'));
+
+            Route::middleware('web')
+                ->prefix('admin')
+                ->group(base_path('routes/web-admin.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Run Inertia's middleware on every web request so each page
-        // can share data (like the logged-in user) with React.
+        $middleware->statefulApi();
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->redirectGuestsTo('/login');
-        $middleware->redirectUsersTo('/');
+        $middleware->redirectGuestsTo('/admin/login');
+        $middleware->redirectUsersTo('/admin/dashboard');
     })
-
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            fn (Request $request) => $request->is('v1/*'),
         );
     })->create();
