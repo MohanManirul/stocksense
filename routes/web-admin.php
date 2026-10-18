@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ProductPageController;
 use App\Http\Controllers\Admin\RolePageController;
+use App\Http\Controllers\Admin\SalePageController;
 use App\Http\Controllers\Admin\SupplierPageController;
 use App\Http\Controllers\Admin\UserPageController;
 use App\Http\Controllers\Auth\AuthController;
@@ -28,6 +29,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::get('/{product}', 'show')->name('show');
             Route::get('/{product}/edit', 'edit')->name('edit');
+        });
+
+    Route::controller(SalePageController::class)
+        ->prefix('sales')
+        ->name('sales.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::get('/{sale}', 'show')->name('show');
         });
 
     Route::get('/categories', fn () => Inertia::render('admin/categories/page'))

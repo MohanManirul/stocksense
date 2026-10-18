@@ -1,6 +1,8 @@
+import { Link } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
 import { Badge, Card, CardHeader, EmptyState, LoadError, Pagination, Table, TableSkeleton, Tbody, Td, Th } from '@/components/ui';
 import { useApi } from '@/config/useApi';
+import { usePermissions } from '@/config/usePermissions';
 import { dateTimeLabel, signed } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { getStockMovements } from '../api';
@@ -11,6 +13,7 @@ export default function StockLedger({ productId }: { productId: number }) {
     const [page, setPage] = useState(1);
     const load = useCallback((signal: AbortSignal) => getStockMovements(productId, page, signal), [productId, page]);
     const { state, reload, refreshing } = useApi(load);
+    const can = usePermissions();
 
     return (
         <Card className="mt-6">
@@ -45,7 +48,15 @@ export default function StockLedger({ productId }: { productId: number }) {
                                             <Badge tone={movementTone[movement.type]}>{movement.type_label}</Badge>
                                             {movement.note && <p className="mt-1 text-xs text-slate-500">{movement.note}</p>}
                                         </Td>
-                                        <Td className="hidden md:table-cell">{movement.reference?.number ?? <span className="text-slate-400">—</span>}</Td>
+                                        <Td className="hidden md:table-cell">
+                                            {movement.reference?.type === 'sale' && can('view sales') ? (
+                                                <Link href={`/admin/sales/${movement.reference.id}`} className="hover:underline">
+                                                    {movement.reference.number}
+                                                </Link>
+                                            ) : (
+                                                (movement.reference?.number ?? <span className="text-slate-400">—</span>)
+                                            )}
+                                        </Td>
                                         <Td className="hidden lg:table-cell">{movement.user?.name ?? '—'}</Td>
                                         <Td align="right" className={cn('font-medium', movement.quantity < 0 ? 'text-red-700' : 'text-green-800')}>
                                             {signed(movement.quantity)}

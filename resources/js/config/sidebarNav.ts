@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShieldCheck, Tags, Truck, Users, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Package, ShieldCheck, ShoppingCart, Tags, Truck, Users, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
     href: string;
@@ -11,6 +11,7 @@ export interface NavItem {
 export const sidebarNav: NavItem[] = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, match: (url) => url.startsWith('/admin/dashboard') },
     { href: '/admin/products', label: 'Products', icon: Package, permission: 'view products', match: (url) => url.startsWith('/admin/products') },
+    { href: '/admin/sales', label: 'Sales', icon: ShoppingCart, permission: 'view sales', match: (url) => url.startsWith('/admin/sales') },
     { href: '/admin/categories', label: 'Categories', icon: Tags, permission: 'view categories', match: (url) => url.startsWith('/admin/categories') },
     { href: '/admin/suppliers', label: 'Suppliers', icon: Truck, permission: 'view suppliers', match: (url) => url.startsWith('/admin/suppliers') },
     { href: '/admin/users', label: 'Users', icon: Users, permission: 'view users', match: (url) => url.startsWith('/admin/users') },
