@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -57,8 +59,8 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             'manageCatalog' => $user->isOwner(),
-            'manageCategories' => $user->isOwner(),
-            'manageSuppliers' => $user->isOwner(),
+            'manageCategories' => $user->can('create', Category::class),
+            'manageSuppliers' => $user->can('create', Supplier::class),
             'managePurchaseOrders' => $user->isOwner(),
         ];
     }

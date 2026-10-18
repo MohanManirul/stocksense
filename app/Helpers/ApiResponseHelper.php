@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 final class ApiResponseHelper
 {
@@ -12,5 +13,10 @@ final class ApiResponseHelper
             'message' => $message,
             'data' => $data,
         ], $status);
+    }
+
+    public static function paginated(ResourceCollection $collection, string $message = 'Success'): JsonResponse
+    {
+        return $collection->additional(['message' => $message])->response();
     }
 }

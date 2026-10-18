@@ -6,14 +6,15 @@ interface AdminPageLayoutProps {
     title: string;
     description?: ReactNode;
     actions?: ReactNode;
+    back?: { href: string; label: string };
     children: ReactNode;
 }
 
-export default function AdminPageLayout({ title, description, actions, children }: AdminPageLayoutProps) {
+export default function AdminPageLayout({ title, description, actions, back, children }: AdminPageLayoutProps) {
     return (
         <>
             <Head title={title} />
-            <PageHeader title={title} description={description} actions={actions} />
+            <PageHeader title={title} description={description} actions={actions} back={back} />
             {children}
         </>
     );
