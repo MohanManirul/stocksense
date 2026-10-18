@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
+use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,8 +40,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'appName' => config('app.name'),
             'auth' => fn () => [
-                'user' => $request->user()?->only('id', 'name', 'email'),
+                'user' => $request->user()?->only('id', 'name', 'email', 'role'),
+                'can' => $request->user() ? $this->permissions($request->user()) : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -47,4 +52,16 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 
+    /**
+     * @return array<string, bool>
+     */
+    private function permissions(User $user): array
+    {
+        return [
+            'manageCatalog' => $user->isOwner(),
+            'manageCategories' => $user->can('create', Category::class),
+            'manageSuppliers' => $user->can('create', Supplier::class),
+            'managePurchaseOrders' => $user->isOwner(),
+        ];
+    }
 }

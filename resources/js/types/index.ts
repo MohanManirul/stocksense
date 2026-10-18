@@ -1,5 +1,14 @@
 export type Role = 'owner' | 'staff';
 
+export type PurchaseOrderStatus = 'draft' | 'ordered' | 'received' | 'cancelled';
+
+export type ReorderStatus = 'critical' | 'reorder' | 'ok' | 'no_data';
+
+export interface ApiResponse<T> {
+    message: string;
+    data: T;
+}
+
 export interface AuthUser {
     id: number;
     name: string;

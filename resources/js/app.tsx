@@ -2,7 +2,7 @@ import '../css/app.css';
 
 import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import AppLayout from '@/layouts/app-layout';
+import DashboardLayout from '@/components/common/DashboardLayout';
 
 const pages = import.meta.glob('./pages/**/*.tsx');
 const appName = import.meta.env.VITE_APP_NAME || 'StockSense';
@@ -17,7 +17,7 @@ createInertiaApp({
         const module = (await page()) as { default: ResolvedComponent };
         return module.default;
     },
-    layout: (name) => (name.startsWith('auth/') ? null : AppLayout),
+    layout: (name) => (name === 'admin/login/page' ? null : DashboardLayout),
     setup({ el, App, props }) {
         if (el) {
             createRoot(el).render(<App {...props} />);
