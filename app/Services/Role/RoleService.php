@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class RoleService
 {
@@ -19,7 +20,14 @@ final class RoleService
      */
     public function list(): Collection
     {
-        return Role::withCount(['permissions', 'users'])->orderBy('name')->get();
+        $usersCount = DB::table(config('permission.table_names.model_has_roles'))
+            ->selectRaw('count(*)')
+            ->whereColumn(app(PermissionRegistrar::class)->pivotRole, 'roles.id');
+
+        return Role::withCount('permissions')
+            ->addSelect(['users_count' => $usersCount])
+            ->orderBy('name')
+            ->get();
     }
 
     /**

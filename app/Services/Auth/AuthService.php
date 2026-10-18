@@ -28,7 +28,7 @@ final class AuthService
     }
 
     /**
-     * @return list<array{role: string, email: string, password: string}>|null
+     * @return list<array{id: int, name: string, role: string|null, email: string}>|null
      */
     public function demoAccounts(): ?array
     {
@@ -36,10 +36,22 @@ final class AuthService
             return null;
         }
 
-        return [
-            ['role' => 'Super Admin', 'email' => 'admin@stocksense.test', 'password' => 'password'],
-            ['role' => 'Admin', 'email' => 'manager@stocksense.test', 'password' => 'password'],
-            ['role' => 'Staff', 'email' => 'staff@stocksense.test', 'password' => 'password'],
-        ];
+        return User::with('roles:id,name')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->roles->first()?->name,
+                'email' => $user->email,
+            ])
+            ->all();
+    }
+
+    public function demoLogin(User $user): void
+    {
+        abort_unless(config('app.demo'), 404);
+
+        Auth::guard('web')->login($user);
     }
 }

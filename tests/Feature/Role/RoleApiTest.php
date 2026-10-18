@@ -21,9 +21,25 @@ class RoleApiTest extends TestCase
         $this->postJson('/v1/admin/categories', ['name' => 'Snacks'])->assertCreated();
     }
 
+    public function test_roles_are_listed_with_counts(): void
+    {
+        User::factory()->count(2)->withRole('staff')->create();
+        $this->actingAs(User::factory()->withRole('admin')->create());
+
+        $this->getJson('/v1/admin/roles')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'admin')
+            ->assertJsonPath('data.0.users_count', 1)
+            ->assertJsonPath('data.0.permissions_count', count(config('admin-permissions.permissions')))
+            ->assertJsonPath('data.1.name', 'staff')
+            ->assertJsonPath('data.1.users_count', 2)
+            ->assertJsonPath('data.2.name', 'super-admin')
+            ->assertJsonPath('data.2.protected', true);
+    }
+
     public function test_permission_groups_follow_the_config(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->getJson('/v1/admin/roles/permission-groups')
             ->assertOk()
@@ -33,7 +49,7 @@ class RoleApiTest extends TestCase
 
     public function test_admin_can_create_update_and_delete_a_role(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $id = $this->postJson('/v1/admin/roles', [
             'name' => 'store-manager',
@@ -66,7 +82,7 @@ class RoleApiTest extends TestCase
 
     public function test_role_input_is_validated(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->postJson('/v1/admin/roles', ['name' => 'Store Manager', 'permissions' => ['fly to the moon']])
             ->assertUnprocessable()
@@ -80,7 +96,7 @@ class RoleApiTest extends TestCase
     public function test_super_admin_role_is_protected(): void
     {
         $superAdmin = Role::findByName(UserRole::SuperAdmin->value, 'web');
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->get("/admin/roles/{$superAdmin->id}/edit")->assertForbidden();
         $this->putJson("/v1/admin/roles/{$superAdmin->id}", ['name' => 'super-admin', 'permissions' => []])->assertForbidden();
@@ -89,9 +105,9 @@ class RoleApiTest extends TestCase
 
     public function test_role_with_users_cannot_be_deleted(): void
     {
-        User::factory()->withRole(UserRole::Staff)->create();
-        $staff = Role::findByName(UserRole::Staff->value, 'web');
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        User::factory()->withRole('staff')->create();
+        $staff = Role::findByName('staff', 'web');
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->deleteJson("/v1/admin/roles/{$staff->id}")
             ->assertUnprocessable()
@@ -100,7 +116,7 @@ class RoleApiTest extends TestCase
 
     public function test_staff_cannot_manage_roles(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create());
+        $this->actingAs(User::factory()->withRole('staff')->create());
 
         $this->get('/admin/roles')->assertForbidden();
         $this->getJson('/v1/admin/roles')->assertForbidden();

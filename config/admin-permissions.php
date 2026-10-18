@@ -2,7 +2,7 @@
 
 return [
 
-    'admin' => [
+    'permissions' => [
         'view categories',
         'create categories',
         'edit categories',
@@ -22,11 +22,6 @@ return [
         'create roles',
         'edit roles',
         'delete roles',
-    ],
-
-    'staff' => [
-        'view categories',
-        'view suppliers',
     ],
 
 ];

@@ -17,18 +17,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
 
-        $accounts = [
-            ['email' => 'admin@stocksense.test', 'name' => 'Shop Owner', 'role' => UserRole::SuperAdmin],
-            ['email' => 'manager@stocksense.test', 'name' => 'Shop Manager', 'role' => UserRole::Admin],
-            ['email' => 'staff@stocksense.test', 'name' => 'Shop Staff', 'role' => UserRole::Staff],
-        ];
-
-        foreach ($accounts as $account) {
-            User::updateOrCreate(
-                ['email' => $account['email']],
-                ['name' => $account['name'], 'password' => 'password'],
-            )->syncRoles($account['role']->value);
-        }
+        User::firstOrCreate(
+            ['email' => 'admin@stocksense.test'],
+            ['name' => 'Shop Owner', 'password' => 'password'],
+        )->assignRole(UserRole::SuperAdmin->value);
 
         foreach (['Beverages', 'Snacks', 'Dairy', 'Household', 'Personal Care', 'Stationery'] as $name) {
             Category::firstOrCreate(['name' => $name]);

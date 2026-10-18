@@ -1,5 +1,6 @@
 export interface DemoAccount {
-    role: string;
+    id: number;
+    name: string;
+    role: string | null;
     email: string;
-    password: string;
 }

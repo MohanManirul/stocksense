@@ -12,7 +12,7 @@ class PermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach (config('admin-permissions.admin') as $permission) {
+        foreach (config('admin-permissions.permissions') as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
 

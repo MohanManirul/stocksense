@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Category;
 
-use App\Enums\UserRole;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -16,7 +15,7 @@ class CategoryApiTest extends TestCase
 
     public function test_categories_page_renders(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create())
+        $this->actingAs(User::factory()->withRole('staff')->create())
             ->get('/admin/categories')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('admin/categories/page'));
@@ -29,7 +28,7 @@ class CategoryApiTest extends TestCase
 
     public function test_admin_can_manage_categories(): void
     {
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $id = $this->postJson('/v1/admin/categories', ['name' => 'Snacks'])
             ->assertCreated()
@@ -53,7 +52,7 @@ class CategoryApiTest extends TestCase
     public function test_staff_can_list_but_not_change_categories(): void
     {
         $category = Category::factory()->create();
-        $this->actingAs(User::factory()->withRole(UserRole::Staff)->create());
+        $this->actingAs(User::factory()->withRole('staff')->create());
 
         $this->getJson('/v1/admin/categories')->assertOk();
         $this->postJson('/v1/admin/categories', ['name' => 'Snacks'])->assertForbidden();
@@ -64,7 +63,7 @@ class CategoryApiTest extends TestCase
     public function test_name_is_required_and_unique(): void
     {
         Category::factory()->create(['name' => 'Snacks']);
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->postJson('/v1/admin/categories', ['name' => ''])
             ->assertUnprocessable()
@@ -85,7 +84,7 @@ class CategoryApiTest extends TestCase
             'cost_price' => 20,
             'sale_price' => 30,
         ]);
-        $this->actingAs(User::factory()->withRole(UserRole::Admin)->create());
+        $this->actingAs(User::factory()->withRole('admin')->create());
 
         $this->deleteJson("/v1/admin/categories/{$category->id}")
             ->assertUnprocessable()
