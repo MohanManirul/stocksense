@@ -10,10 +10,21 @@ use App\Http\Resources\Category\CategoryResource;
 use App\Models\Category;
 use App\Services\Category\CategoryService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CategoryController extends Controller
+class CategoryController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view categories', only: ['index']),
+            new Middleware('permission:create categories', only: ['store']),
+            new Middleware('permission:edit categories', only: ['update']),
+            new Middleware('permission:delete categories', only: ['destroy']),
+        ];
+    }
+
     public function __construct(
         private readonly CategoryService $categoryService,
     ) {}
@@ -39,8 +50,6 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): JsonResponse
     {
-        Gate::authorize('delete', $category);
-
         $this->categoryService->delete($category);
 
         return ApiResponseHelper::success(message: 'Category deleted.');

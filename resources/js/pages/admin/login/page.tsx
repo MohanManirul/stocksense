@@ -1,15 +1,23 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Boxes, LogIn } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Button, Checkbox, Field, Input } from '@/components/ui';
 import type { DemoAccount } from './types';
 
 export default function Login({ demo }: { demo: DemoAccount[] | null }) {
     const form = useForm({ email: '', password: '', remember: false });
+    const [signingIn, setSigningIn] = useState<number | null>(null);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
         form.post('/admin/login', { onFinish: () => form.reset('password') });
+    };
+
+    const use = (account: DemoAccount) => {
+        router.post(`/admin/demo-login/${account.id}`, {}, {
+            onStart: () => setSigningIn(account.id),
+            onFinish: () => setSigningIn(null),
+        });
     };
 
     return (
@@ -56,28 +64,30 @@ export default function Login({ demo }: { demo: DemoAccount[] | null }) {
                     </Button>
                 </form>
 
-                {demo && (
+                {demo && demo.length > 0 && (
                     <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white/60 p-4">
                         <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">Demo accounts</p>
-                        <ul className="space-y-2">
+                        <ul className="max-h-72 space-y-2 overflow-y-auto">
                             {demo.map((account) => (
-                                <li key={account.email} className="flex items-center justify-between gap-3 text-sm">
+                                <li key={account.id} className="flex items-center justify-between gap-3 text-sm">
                                     <span className="min-w-0">
-                                        <span className="font-medium text-slate-800">{account.role}</span>
-                                        <span className="block truncate text-slate-500">
-                                            {account.email} · {account.password}
-                                        </span>
+                                        <span className="font-medium text-slate-800">{account.name}</span>
+                                        <span className="ml-1.5 text-xs text-slate-500 capitalize">{account.role?.replace('-', ' ') ?? 'no role'}</span>
+                                        <span className="block truncate text-slate-500">{account.email}</span>
                                     </span>
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        onClick={() => form.setData({ email: account.email, password: account.password, remember: false })}
+                                        processing={signingIn === account.id}
+                                        disabled={signingIn !== null}
+                                        onClick={() => use(account)}
                                     >
                                         Use
                                     </Button>
                                 </li>
                             ))}
                         </ul>
+                        <p className="mt-3 text-xs text-slate-500">Demo mode: “Use” signs you straight in as that account.</p>
                     </div>
                 )}
             </div>

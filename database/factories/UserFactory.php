@@ -34,11 +34,9 @@ class UserFactory extends Factory
         ];
     }
 
-    public function owner(): static
+    public function withRole(UserRole|string $role): static
     {
-        return $this->state(fn (array $attributes) => [
-            'role' => UserRole::Owner,
-        ]);
+        return $this->afterCreating(fn (User $user) => $user->assignRole($role instanceof UserRole ? $role->value : $role));
     }
 
     /**

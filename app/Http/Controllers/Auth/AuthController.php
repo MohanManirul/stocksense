@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use App\Services\Auth\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,15 @@ class AuthController extends Controller
             $request->safe()->only('email', 'password'),
             $request->boolean('remember'),
         );
+
+        $request->session()->regenerate();
+
+        return redirect()->intended('/admin/dashboard');
+    }
+
+    public function demoLogin(Request $request, User $user): RedirectResponse
+    {
+        $this->authService->demoLogin($user);
 
         $request->session()->regenerate();
 

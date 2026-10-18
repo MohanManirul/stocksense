@@ -27,7 +27,7 @@ export default function Categories() {
     return (
         <div className="mx-auto max-w-3xl">
             <AdminPageLayout title="Categories" description="Group products so they are easier to find and report on.">
-                {can.manageCategories && (
+                {can('create categories') && (
                     <Card className="mb-6">
                         <form onSubmit={submit} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:px-5" noValidate>
                             <div className="flex-1">
@@ -59,7 +59,7 @@ export default function Categories() {
                         ) : (
                             <ul className="divide-y divide-slate-100">
                                 {state.data.map((category) => (
-                                    <CategoryRow key={category.id} category={category} canManage={can.manageCategories} onChange={reload} />
+                                    <CategoryRow key={category.id} category={category} canEdit={can('edit categories')} canDelete={can('delete categories')} onChange={reload} />
                                 ))}
                             </ul>
                         )}
@@ -70,7 +70,7 @@ export default function Categories() {
     );
 }
 
-function CategoryRow({ category, canManage, onChange }: { category: Category; canManage: boolean; onChange: () => void }) {
+function CategoryRow({ category, canEdit, canDelete, onChange }: { category: Category; canEdit: boolean; canDelete: boolean; onChange: () => void }) {
     const [editing, setEditing] = useState(false);
     const form = useApiForm({ name: category.name });
 
@@ -122,8 +122,8 @@ function CategoryRow({ category, canManage, onChange }: { category: Category; ca
                 <p className="truncate text-sm font-medium text-slate-900">{category.name}</p>
                 <p className="text-xs text-slate-500">{category.products_count} products</p>
             </div>
-            {canManage && (
-                <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">
+                {canEdit && (
                     <Button
                         variant="ghost"
                         size="sm"
@@ -135,6 +135,8 @@ function CategoryRow({ category, canManage, onChange }: { category: Category; ca
                     >
                         Rename
                     </Button>
+                )}
+                {canDelete && (
                     <ConfirmButton
                         onConfirm={remove}
                         title={`Delete “${category.name}”?`}
@@ -147,8 +149,8 @@ function CategoryRow({ category, canManage, onChange }: { category: Category; ca
                     >
                         Delete
                     </ConfirmButton>
-                </div>
-            )}
+                )}
+            </div>
         </li>
     );
 }

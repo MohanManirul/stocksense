@@ -3,6 +3,7 @@ import { Boxes, LogOut, Menu, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Toaster } from '@/components/ui';
 import { sidebarNav } from '@/config/sidebarNav';
+import { usePermissions } from '@/config/usePermissions';
 import { cn } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
@@ -10,6 +11,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const { url, props } = usePage<SharedProps>();
     const [open, setOpen] = useState(false);
     const user = props.auth.user;
+    const can = usePermissions();
+    const navigation = sidebarNav.filter((item) => !item.permission || can(item.permission));
 
     useEffect(() => router.on('navigate', () => setOpen(false)), []);
 
@@ -22,7 +25,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <span className="text-base font-semibold tracking-tight text-slate-900">{props.appName}</span>
             </Link>
             <nav className="flex-1 space-y-0.5 px-3 py-2" aria-label="Main">
-                {sidebarNav.map((item) => {
+                {navigation.map((item) => {
                     const active = item.match(url.split('?')[0]);
 
                     return (
@@ -54,7 +57,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         </span>
                         <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-slate-900">{user.name}</p>
-                            <p className="truncate text-xs text-slate-500 capitalize">{user.role}</p>
+                            <p className="truncate text-xs text-slate-500 capitalize">{user.roles.map((role) => role.replace('-', ' ')).join(', ')}</p>
                         </div>
                         <Link
                             href="/admin/logout"

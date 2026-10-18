@@ -1,5 +1,3 @@
-export type Role = 'owner' | 'staff';
-
 export type PurchaseOrderStatus = 'draft' | 'ordered' | 'received' | 'cancelled';
 
 export type ReorderStatus = 'critical' | 'reorder' | 'ok' | 'no_data';
@@ -13,19 +11,12 @@ export interface AuthUser {
     id: number;
     name: string;
     email: string;
-    role: Role;
-}
-
-export interface Permissions {
-    manageCatalog: boolean;
-    manageCategories: boolean;
-    manageSuppliers: boolean;
-    managePurchaseOrders: boolean;
+    roles: string[];
 }
 
 export interface SharedProps {
     appName: string;
-    auth: { user: AuthUser | null; can: Permissions | null };
+    auth: { user: AuthUser | null; permissions: string[] };
     errors: Record<string, string>;
     [key: string]: unknown;
 }
