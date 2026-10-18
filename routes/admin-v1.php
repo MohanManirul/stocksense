@@ -5,6 +5,7 @@ use App\Http\Controllers\V1\Admin\Dashboard\DashboardController;
 use App\Http\Controllers\V1\Admin\Product\ProductController;
 use App\Http\Controllers\V1\Admin\Product\ProductStockController;
 use App\Http\Controllers\V1\Admin\Role\RoleController;
+use App\Http\Controllers\V1\Admin\Sale\SaleController;
 use App\Http\Controllers\V1\Admin\Supplier\SupplierController;
 use App\Http\Controllers\V1\Admin\User\UserController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,9 @@ Route::middleware('auth:sanctum')
         Route::get('products/{product}/movements', [ProductStockController::class, 'index'])->name('products.movements');
         Route::post('products/{product}/adjustments', [ProductStockController::class, 'store'])->name('products.adjustments');
         Route::apiResource('products', ProductController::class);
+
+        Route::get('sales/options', [SaleController::class, 'options'])->name('sales.options');
+        Route::apiResource('sales', SaleController::class)->only(['index', 'store', 'show']);
 
         Route::apiResource('categories', CategoryController::class)->except('show');
         Route::apiResource('suppliers', SupplierController::class);

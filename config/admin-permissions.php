@@ -9,6 +9,9 @@ return [
         'delete products',
         'adjust stock',
 
+        'view sales',
+        'create sales',
+
         'view categories',
         'create categories',
         'edit categories',
