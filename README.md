@@ -30,8 +30,12 @@ You can run the project in one of two ways.
 
 **Option A: with Docker (recommended).** You only need:
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/). On Windows, use it with WSL 2 and keep the project inside the WSL file system.
+- Docker with the Compose plugin, either of:
+  - [Docker Engine](https://docs.docker.com/engine/install/ubuntu/) installed directly on Linux, or inside WSL 2 Ubuntu on Windows (the setup this project was built with)
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) on Windows or macOS (on Windows, enable WSL 2 integration)
 - Git
+
+On Windows, keep the project inside the WSL file system (for example `~/projects/stocksense`), not under `/mnt/c/...`, or file access will be very slow.
 
 **Option B: without Docker.** You need:
 
