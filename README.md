@@ -9,10 +9,26 @@ StockSense tracks products, stock movements, sales and purchase orders, and fore
 - **Dashboard**: stock and sales overview
 - **Products, categories and suppliers**, with stock levels and reorder levels
 - **Sales**: record sales; stock is deducted automatically
-- **Purchase orders**: order from suppliers and receive stock
+- **Purchase orders**: order from suppliers and receive stock (see [Purchase order workflow](#purchase-order-workflow))
 - **Demand forecasts**: a weekly-seasonal demand model, back-tested against a moving average, that suggests reorder points and order quantities from each supplier's lead time
 - **Users, roles and permissions** (via `spatie/laravel-permission`)
 - **Demo mode**: one-click sign-in as any seeded account
+
+## Purchase order workflow
+
+The workflow is implemented in `PurchaseOrderService`, and `PurchaseOrderStatus::allowedTransitions()` defines which status changes are allowed.
+
+```
+draft ──place──► ordered ──receive──► received
+  │                 │
+  └──cancel──► cancelled ◄──cancel──┘
+```
+
+- Only drafts can be edited or deleted.
+- Placing an order requires at least one item. It sets `ordered_at`, and sets `expected_at` from the supplier's lead time if none was given.
+- Receiving locks the order and its products, adds stock through the ledger, and records who received it. An order can't be received twice.
+- A draft or a placed order can be cancelled. Stock doesn't change.
+- Any other status change is rejected with a validation error.
 
 ## Tech stack
 
