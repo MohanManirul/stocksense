@@ -1,58 +1,253 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# StockSense
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Inventory, sales and smart reordering for small shops.
 
-## About Laravel
+StockSense tracks products, stock movements, sales and purchase orders, and forecasts each product's daily demand from its sales history to suggest when and how much to reorder.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Dashboard**: stock and sales overview
+- **Products, categories and suppliers**, with stock levels and reorder levels
+- **Sales**: record sales; stock is deducted automatically
+- **Purchase orders**: order from suppliers and receive stock
+- **Demand forecasts**: a weekly-seasonal demand model, back-tested against a moving average, that suggests reorder points and order quantities from each supplier's lead time
+- **Users, roles and permissions** (via `spatie/laravel-permission`)
+- **Demo mode**: one-click sign-in as any seeded account
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech stack
 
-## Learning Laravel
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 13, PHP 8.4+ |
+| Frontend | Inertia.js v3, React 19, TypeScript, Tailwind CSS v4 |
+| Build tool | Vite 8 |
+| Database | PostgreSQL |
+| Local environment | Docker via Laravel Sail (optional) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Requirements
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+You can run the project in one of two ways.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**Option A: with Docker (recommended).** You only need:
 
-## Agentic Development
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/). On Windows, use it with WSL 2 and keep the project inside the WSL file system.
+- Git
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+**Option B: without Docker.** You need:
+
+- PHP **8.4.1 or newer**, with the `pdo_pgsql`, `mbstring`, `intl`, `bcmath`, `fileinfo`, `xml`, `ctype`, `tokenizer`, `openssl`, `curl` and `zip` extensions
+- [Composer](https://getcomposer.org/) 2
+- [Node.js](https://nodejs.org/) **22 LTS** or newer, with npm
+- PostgreSQL 14 or newer
+- Git
+
+> Some locked Composer dependencies require PHP 8.4.1 or newer, so `composer install` fails on PHP 8.3.
+
+---
+
+## Installation: Option A (Docker / Laravel Sail)
+
+### 1. Clone the repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/MohanManirul/stocksense.git
+cd stocksense
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Install PHP dependencies
 
-## Contributing
+Sail lives inside `vendor/`, so the first install runs in a throwaway Composer container:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php84-composer:latest \
+    composer install --ignore-platform-reqs
+```
 
-## Code of Conduct
+### 3. Create the environment file
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Open `.env` and set the database section for Sail's PostgreSQL container:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+APP_URL=http://localhost
+
+DB_CONNECTION=pgsql
+DB_HOST=pgsql
+DB_PORT=5432
+DB_DATABASE=stocksense
+DB_USERNAME=sail
+DB_PASSWORD=password
+```
+
+### 4. Start the containers
+
+```bash
+./vendor/bin/sail up -d
+```
+
+The first run builds the app image, which takes a few minutes.
+
+> **Tip:** add an alias so you can type `sail` instead of `./vendor/bin/sail`:
+>
+> ```bash
+> alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+> ```
+
+### 5. Set up the application
+
+```bash
+sail artisan key:generate
+sail artisan migrate --seed
+sail npm install
+sail npm run build
+```
+
+### 6. Open the app
+
+Visit **http://localhost/admin/login**.
+
+The `vite` container runs the Vite dev server with hot reload, so frontend changes show up immediately.
+
+To stop the containers:
+
+```bash
+sail down
+```
+
+---
+
+## Installation: Option B (without Docker)
+
+### 1. Clone and install dependencies
+
+```bash
+git clone https://github.com/MohanManirul/stocksense.git
+cd stocksense
+composer install
+npm install
+```
+
+### 2. Create a PostgreSQL database
+
+```bash
+createdb stocksense
+```
+
+Or create the database with pgAdmin or `psql`.
+
+### 3. Configure the environment
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Edit `.env`:
+
+```env
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=stocksense
+DB_USERNAME=your_postgres_user
+DB_PASSWORD=your_postgres_password
+```
+
+### 4. Migrate and seed
+
+```bash
+php artisan migrate --seed
+```
+
+### 5. Run the app
+
+```bash
+composer run dev
+```
+
+This starts the Laravel server and the Vite dev server together. If you prefer, run them in two terminals:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+Visit **http://localhost:8000/admin/login**.
+
+---
+
+## Demo data and login
+
+`php artisan migrate --seed` creates:
+
+- the roles and permissions
+- a **Super Admin** account
+- sample categories, suppliers and products
+- **90 days of sales and purchase history**, so the forecasts have data to work with
+
+| Email | Password |
+|---|---|
+| `admin@stocksense.test` | `password` |
+
+With `APP_DEMO=true` in `.env`, the login page lists every account with a **Use** button that signs in without a password. Set `APP_DEMO=false` to turn this off. Never enable it on a public server with real data.
+
+To reset the database and seed it again:
+
+```bash
+php artisan migrate:fresh --seed        # or: sail artisan migrate:fresh --seed
+```
+
+---
+
+## Running tests
+
+Tests use a separate database named `testing`, as configured in `phpunit.xml`.
+
+- **Sail** creates the `testing` database automatically:
+
+  ```bash
+  sail artisan test
+  ```
+
+- **Without Docker**, create it first:
+
+  ```bash
+  createdb testing
+  php artisan test
+  ```
+
+## Code style
+
+PHP code is formatted with [Laravel Pint](https://laravel.com/docs/pint):
+
+```bash
+vendor/bin/pint
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `Your Composer dependencies require a PHP version ">= 8.4.1"` | Upgrade PHP to 8.4.1 or newer. |
+| `could not find driver` | Enable the `pdo_pgsql` PHP extension. |
+| `Unable to locate file in Vite manifest` | Run `npm run build`, or keep `npm run dev` running. |
+| Blank page whose assets load from `localhost:5173` | The Vite dev server stopped but `public/hot` remains. Run `npm run dev` again, or delete `public/hot`. |
+| `EACCES: permission denied` on `public/build` | The folder was created by root, probably from an earlier build run as root or with `sudo`. Run `sudo chown -R $USER:$USER public/build`. |
+| `SQLSTATE[08006] connection refused` | Check that PostgreSQL is running and that `DB_HOST` is correct: `pgsql` with Sail, `127.0.0.1` without Docker. |
+| Port 80 or 5432 already in use (Sail) | Set `APP_PORT=8080` or `FORWARD_DB_PORT=5433` in `.env`, then run `sail up -d` again. |
+| `.env` changes have no effect | Run `php artisan config:clear`. |
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Open-sourced under the [MIT license](https://opensource.org/licenses/MIT).

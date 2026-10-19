@@ -11,6 +11,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Forecasts each product's daily demand from its sales history and turns the
@@ -374,16 +375,16 @@ final class DemandForecastService
             ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
             ->whereIn('sale_items.product_id', $productIds)
             ->where('sales.sold_at', '>=', $from->utc())
-            // sold_at is stored in UTC; bucket by the shop's calendar day.
-            ->selectRaw("sale_items.product_id, to_char((sales.sold_at AT TIME ZONE 'UTC') AT TIME ZONE ?, 'YYYY-MM-DD') as day, sum(sale_items.quantity) as units", [self::SHOP_TIME_ZONE])
-            ->groupBy('sale_items.product_id', 'day')
             ->toBase()
-            ->get();
+            ->get(['sale_items.product_id', 'sales.sold_at', 'sale_items.quantity']);
 
         $sales = [];
 
         foreach ($rows as $row) {
-            $sales[$row->product_id][$row->day] = (int) $row->units;
+            // sold_at is stored in UTC; bucket by the shop's calendar day in PHP
+            // so the query stays portable across PostgreSQL and MySQL.
+            $day = CarbonImmutable::parse($row->sold_at, 'UTC')->setTimezone(self::SHOP_TIME_ZONE)->toDateString();
+            $sales[$row->product_id][$day] = ($sales[$row->product_id][$day] ?? 0) + (int) $row->quantity;
         }
 
         return $sales;
@@ -402,15 +403,17 @@ final class DemandForecastService
             return [];
         }
 
-        $opening = StockMovement::query()
+        // Latest balance before the window, per product.
+        $ranked = StockMovement::query()
             ->whereIn('product_id', $productIds)
             ->where('occurred_at', '<', $from->utc())
             ->select('product_id', 'balance_after')
-            ->distinct('product_id')
-            ->orderBy('product_id')
-            ->orderByDesc('occurred_at')
-            ->orderByDesc('id')
-            ->toBase()
+            ->selectRaw('row_number() over (partition by product_id order by occurred_at desc, id desc) as recency')
+            ->toBase();
+
+        $opening = DB::query()
+            ->fromSub($ranked, 'ranked')
+            ->where('recency', 1)
             ->pluck('balance_after', 'product_id');
 
         $movements = StockMovement::query()
