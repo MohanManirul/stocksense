@@ -21,18 +21,18 @@ export default function Login({ demo }: { demo: DemoAccount[] | null }) {
     };
 
     return (
-        <div className="flex min-h-full flex-col justify-center bg-slate-50 px-4 py-12">
+        <div className="flex min-h-full flex-col justify-center bg-[radial-gradient(circle_at_top,#1e293b,#0f172a)] px-4 py-12">
             <Head title="Log in" />
             <div className="mx-auto w-full max-w-sm">
                 <div className="mb-8 flex flex-col items-center text-center">
                     <span className="mb-4 flex size-11 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
                         <Boxes className="size-6" aria-hidden />
                     </span>
-                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Sign in to StockSense</h1>
-                    <p className="mt-1 text-sm text-slate-500">Inventory, sales and smart reordering for small shops.</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-white">Sign in to StockSense</h1>
+                    <p className="mt-1 text-sm text-slate-400">Inventory, sales and smart reordering for small shops.</p>
                 </div>
 
-                <form onSubmit={submit} className="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200" noValidate>
+                <form onSubmit={submit} className="space-y-4 rounded-2xl bg-white p-6 shadow-2xl shadow-black/40" noValidate>
                     <Field label="Email" error={form.errors.email}>
                         {(field) => (
                             <Input
@@ -65,15 +65,15 @@ export default function Login({ demo }: { demo: DemoAccount[] | null }) {
                 </form>
 
                 {demo && demo.length > 0 && (
-                    <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white/60 p-4">
-                        <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">Demo accounts</p>
+                    <div className="mt-6 rounded-xl border border-dashed border-slate-700 bg-[#111c33] p-4">
+                        <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400 uppercase">Demo accounts</p>
                         <ul className="max-h-72 space-y-2 overflow-y-auto">
                             {demo.map((account) => (
                                 <li key={account.id} className="flex items-center justify-between gap-3 text-sm">
                                     <span className="min-w-0">
-                                        <span className="font-medium text-slate-800">{account.name}</span>
-                                        <span className="ml-1.5 text-xs text-slate-500 capitalize">{account.role?.replace('-', ' ') ?? 'no role'}</span>
-                                        <span className="block truncate text-slate-500">{account.email}</span>
+                                        <span className="font-medium text-slate-100">{account.name}</span>
+                                        <span className="ml-1.5 text-xs text-slate-400 capitalize">{account.role?.replace('-', ' ') ?? 'no role'}</span>
+                                        <span className="block truncate text-slate-400">{account.email}</span>
                                     </span>
                                     <Button
                                         variant="secondary"
@@ -87,7 +87,7 @@ export default function Login({ demo }: { demo: DemoAccount[] | null }) {
                                 </li>
                             ))}
                         </ul>
-                        <p className="mt-3 text-xs text-slate-500">Demo mode: “Use” signs you straight in as that account.</p>
+                        <p className="mt-3 text-xs text-slate-400">Demo mode: “Use” signs you straight in as that account.</p>
                     </div>
                 )}
             </div>
