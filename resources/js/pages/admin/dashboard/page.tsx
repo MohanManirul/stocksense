@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { PackageCheck, ShoppingCart, Truck, TriangleAlert, type LucideIcon } from 'lucide-react';
+import { ArrowRight, PackageCheck, ShoppingCart, TrendingUp, Truck, TriangleAlert, type LucideIcon } from 'lucide-react';
 import AdminPageLayout from '@/components/admin/AdminPageLayout';
 import { Card, CardHeader, EmptyState, LoadError, PageSkeleton, Table, Tbody, Td, Th } from '@/components/ui';
 import { useApi } from '@/config/useApi';
@@ -31,6 +31,23 @@ export default function Dashboard() {
 
             {state.status === 'success' && (
                 <div className="space-y-6">
+                    {state.data.reorder && state.data.reorder.needs_reorder > 0 && (
+                        <Link
+                            href="/admin/forecasts"
+                            className="flex items-center gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100"
+                        >
+                            <TrendingUp className="size-5 shrink-0 text-amber-700" aria-hidden />
+                            <span className="flex-1">
+                                <strong className="font-semibold">
+                                    {qty(state.data.reorder.needs_reorder)} {state.data.reorder.needs_reorder === 1 ? 'product' : 'products'}
+                                </strong>{' '}
+                                should be reordered based on the demand forecast
+                                {state.data.reorder.critical > 0 && <>, {qty(state.data.reorder.critical)} of them will likely run out before a new delivery arrives</>}.
+                            </span>
+                            <ArrowRight className="size-4 shrink-0" aria-hidden />
+                        </Link>
+                    )}
+
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard label="Sales today" value={money(state.data.stats.sales_today)} icon={ShoppingCart} />
                         <StatCard label="Sales, last 30 days" value={money(state.data.stats.sales_last_30_days)} icon={ShoppingCart} />

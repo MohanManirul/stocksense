@@ -21,6 +21,7 @@ class DashboardResource extends JsonResource
                 'sales_last_30_days' => $this->resource['sales_last_30_days'],
                 'open_purchase_orders' => $this->resource['open_purchase_orders'],
             ],
+            'reorder' => $this->resource['reorder'],
             'low_stock_products' => $this->resource['low_stock_products']->map(fn (Product $product) => [
                 'id' => $product->id,
                 'sku' => $product->sku,

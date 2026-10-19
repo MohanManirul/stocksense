@@ -18,6 +18,8 @@ return [
         'delete purchase orders',
         'receive purchase orders',
 
+        'view forecasts',
+
         'view categories',
         'create categories',
         'edit categories',

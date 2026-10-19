@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\V1\Admin\Category\CategoryController;
 use App\Http\Controllers\V1\Admin\Dashboard\DashboardController;
+use App\Http\Controllers\V1\Admin\Forecast\DemandForecastController;
 use App\Http\Controllers\V1\Admin\Product\ProductController;
 use App\Http\Controllers\V1\Admin\Product\ProductStockController;
 use App\Http\Controllers\V1\Admin\PurchaseOrder\PurchaseOrderController;
@@ -36,6 +37,9 @@ Route::middleware('auth:sanctum')
                 Route::post('cancel', 'cancel')->name('cancel');
             });
         Route::apiResource('purchase-orders', PurchaseOrderController::class);
+
+        Route::get('forecasts', [DemandForecastController::class, 'index'])->name('forecasts.index');
+        Route::get('forecasts/{product}', [DemandForecastController::class, 'show'])->name('forecasts.show');
 
         Route::apiResource('categories', CategoryController::class)->except('show');
         Route::apiResource('suppliers', SupplierController::class);

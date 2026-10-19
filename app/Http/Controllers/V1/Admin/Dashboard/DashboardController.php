@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Dashboard\DashboardResource;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,8 +15,8 @@ class DashboardController extends Controller
         private readonly DashboardService $dashboardService,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return ApiResponseHelper::success(new DashboardResource($this->dashboardService->summary()));
+        return ApiResponseHelper::success(new DashboardResource($this->dashboardService->summary($request->user())));
     }
 }
