@@ -96,11 +96,15 @@ function OrderDetail({ order, onChange }: { order: PurchaseOrder; onChange: () =
                             Receive
                         </ConfirmButton>
                     )}
-                    {order.status === 'ordered' && can('edit purchase orders') && (
+                    {(order.status === 'draft' || order.status === 'ordered') && can('edit purchase orders') && (
                         <ConfirmButton
                             onConfirm={() => change('cancel', `${order.number} cancelled.`)}
                             title={`Cancel ${order.number}?`}
-                            description="Use this when the supplier won’t deliver. Stock is not changed."
+                            description={
+                                order.status === 'draft'
+                                    ? 'The draft is kept for the record but can no longer be placed. Stock is not changed.'
+                                    : 'Use this when the supplier won’t deliver. Stock is not changed.'
+                            }
                             confirmLabel="Cancel order"
                             variant="danger"
                             triggerVariant="ghost"

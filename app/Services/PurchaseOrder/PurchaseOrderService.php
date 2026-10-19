@@ -15,9 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * A purchase order moves draft → ordered → received, and a placed order can
- * be cancelled instead of received. Only drafts can be edited or deleted, and
- * stock only changes when an order is received.
+ * A purchase order moves draft → ordered → received, and a draft or placed
+ * order can be cancelled instead. PurchaseOrderStatus defines which moves are
+ * allowed. Only drafts can be edited or deleted, and stock only changes when
+ * an order is received.
  */
 final class PurchaseOrderService
 {
@@ -122,17 +123,14 @@ final class PurchaseOrderService
 
     public function place(PurchaseOrder $order): PurchaseOrder
     {
-        return DB::transaction(function () use ($order) {
-            $order = $this->lock($order, [PurchaseOrderStatus::Draft], 'Only draft orders can be placed.');
+        return $this->transition($order, PurchaseOrderStatus::Ordered, function (PurchaseOrder $order): void {
+            if ($order->items()->doesntExist()) {
+                throw ValidationException::withMessages(['status' => 'Add at least one item before placing the order.']);
+            }
 
-            $order->update([
-                'status' => PurchaseOrderStatus::Ordered,
-                'ordered_at' => now(),
-                // Without a date from the user, expect it after the supplier's usual lead time.
-                'expected_at' => $order->expected_at ?? now()->addDays($order->supplier->lead_time_days)->toDateString(),
-            ]);
-
-            return $this->find($order);
+            $order->ordered_at = now();
+            // Without a date from the user, expect it after the supplier's usual lead time.
+            $order->expected_at ??= now()->addDays($order->supplier->lead_time_days)->toDateString();
         });
     }
 
@@ -141,9 +139,7 @@ final class PurchaseOrderService
      */
     public function receive(PurchaseOrder $order, User $user): PurchaseOrder
     {
-        return DB::transaction(function () use ($order, $user) {
-            // Locking the order first means a double click can't receive it twice.
-            $order = $this->lock($order, [PurchaseOrderStatus::Ordered], 'Only placed orders can be received.');
+        return $this->transition($order, PurchaseOrderStatus::Received, function (PurchaseOrder $order) use ($user): void {
             $items = $order->items()->get();
 
             $products = Product::whereIn('id', $items->pluck('product_id'))
@@ -156,27 +152,42 @@ final class PurchaseOrderService
                 $this->stockService->record($products[$item->product_id], $item->quantity, StockMovementType::Purchase, $user, $order);
             }
 
-            $order->update([
-                'status' => PurchaseOrderStatus::Received,
-                'received_at' => now(),
-                'received_by' => $user->id,
-            ]);
-
-            return $this->find($order);
+            $order->received_at = now();
+            $order->received_by = $user->id;
         });
     }
 
     public function cancel(PurchaseOrder $order): PurchaseOrder
     {
-        return DB::transaction(function () use ($order) {
-            $order = $this->lock($order, [PurchaseOrderStatus::Ordered], 'Only placed orders can be cancelled. Delete a draft instead.');
+        return $this->transition($order, PurchaseOrderStatus::Cancelled, function (PurchaseOrder $order): void {
+            $order->cancelled_at = now();
+        });
+    }
 
-            $order->update([
-                'status' => PurchaseOrderStatus::Cancelled,
-                'cancelled_at' => now(),
-            ]);
+    /**
+     * Moves the order to $next if its status allows it, running $apply first.
+     *
+     * Locking the order first means a double click can't apply a move twice.
+     *
+     * @param  callable(PurchaseOrder): void  $apply
+     */
+    private function transition(PurchaseOrder $order, PurchaseOrderStatus $next, callable $apply): PurchaseOrder
+    {
+        return DB::transaction(function () use ($order, $next, $apply) {
+            $locked = PurchaseOrder::lockForUpdate()->findOrFail($order->id);
 
-            return $this->find($order);
+            if (! $locked->status->canTransitionTo($next)) {
+                throw ValidationException::withMessages([
+                    'status' => "A {$locked->status->value} purchase order cannot be marked as {$next->value}.",
+                ]);
+            }
+
+            $apply($locked);
+
+            $locked->status = $next;
+            $locked->save();
+
+            return $this->find($locked);
         });
     }
 
