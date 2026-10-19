@@ -16,5 +16,7 @@ export interface LowStockProduct {
 
 export interface DashboardSummary {
     stats: DashboardStats;
+    /** Null when the user can't view forecasts. */
+    reorder: { needs_reorder: number; critical: number } | null;
     low_stock_products: LowStockProduct[];
 }

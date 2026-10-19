@@ -64,5 +64,7 @@ class DatabaseSeeder extends Seeder
                 'opening_stock' => $openingStock,
             ], $owner);
         }
+
+        $this->call(DemoHistorySeeder::class);
     }
 }

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Pencil, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { Pencil, SlidersHorizontal, Trash2, TrendingUp } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import AdminPageLayout from '@/components/admin/AdminPageLayout';
 import { Button, ButtonLink, Card, CardBody, ConfirmButton, LoadError, PageSkeleton, StockBadge } from '@/components/ui';
@@ -59,6 +59,11 @@ function ProductDetail({ product, version, onStockChange }: { product: Product; 
             }
             actions={
                 <>
+                    {can('view forecasts') && (
+                        <ButtonLink href={`/admin/forecasts/${product.id}`} variant="secondary" icon={<TrendingUp className="size-4" aria-hidden />}>
+                            Forecast
+                        </ButtonLink>
+                    )}
                     {can('adjust stock') && (
                         <Button variant="secondary" icon={<SlidersHorizontal className="size-4" aria-hidden />} onClick={() => setAdjusting(true)}>
                             Adjust stock

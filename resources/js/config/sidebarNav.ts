@@ -1,4 +1,4 @@
-import { ClipboardList, LayoutDashboard, Package, ShieldCheck, ShoppingCart, Tags, Truck, Users, type LucideIcon } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, Package, ShieldCheck, ShoppingCart, Tags, TrendingUp, Truck, Users, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
     href: string;
@@ -18,6 +18,13 @@ export const sidebarNav: NavItem[] = [
         icon: ClipboardList,
         permission: 'view purchase orders',
         match: (url) => url.startsWith('/admin/purchase-orders'),
+    },
+    {
+        href: '/admin/forecasts',
+        label: 'Demand forecast',
+        icon: TrendingUp,
+        permission: 'view forecasts',
+        match: (url) => url.startsWith('/admin/forecasts'),
     },
     { href: '/admin/categories', label: 'Categories', icon: Tags, permission: 'view categories', match: (url) => url.startsWith('/admin/categories') },
     { href: '/admin/suppliers', label: 'Suppliers', icon: Truck, permission: 'view suppliers', match: (url) => url.startsWith('/admin/suppliers') },
