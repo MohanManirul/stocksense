@@ -8,6 +8,7 @@ import { usePermissions } from '@/config/usePermissions';
 import { date, dateTimeLabel, money, qty } from '@/lib/format';
 import { toast } from '@/lib/toast';
 import { changePurchaseOrderStatus, deletePurchaseOrder, getPurchaseOrder } from '../api';
+import StatusFlow from '../components/StatusFlow';
 import type { PurchaseOrder } from '../types';
 
 export default function ShowPurchaseOrder({ purchaseOrderId }: { purchaseOrderId: number }) {
@@ -120,6 +121,10 @@ function OrderDetail({ order, onChange }: { order: PurchaseOrder; onChange: () =
                 <Summary label="Total" value={money(order.total)} hint={`${qty(units)} units`} />
                 <Summary label="Expected delivery" value={date(order.expected_at)} hint={`${order.supplier?.lead_time_days ?? '—'} day lead time`} />
                 <Summary label="Created by" value={order.creator?.name ?? '—'} hint={dateTimeLabel(order.created_at)} />
+            </div>
+
+            <div className="mt-6">
+                <StatusFlow order={order} />
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3 lg:items-start">
